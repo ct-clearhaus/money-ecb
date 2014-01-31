@@ -52,8 +52,9 @@ class Money
       def load_from_cachefile
         csv = CSV.parse(File.open(@cache_filename).read, :headers => true)
 
-#       @mutex.synchronize do
-          date_pair, *rest = csv.first.map{|x,y| [x.strip, y.strip]}
+        date_pair, *rest = csv.first.map{|x,y| [x.strip, y.strip]}
+
+        @mutex.synchronize do
           @rates_date = date_pair[1]
 
           quotations = Hash[rest.map{|cur,rate| [cur, rate.to_f]}]
@@ -62,15 +63,15 @@ class Money
           @currencies = quotations.keys
 
           quotations.each do |currency, rate|
-            set_rate('EUR', currency, rate)
-            set_rate(currency, 'EUR', 1/rate)
+            set_rate('EUR', currency, rate, :without_mutex => true)
+            set_rate(currency, 'EUR', 1/rate, :without_mutex => true)
 
             quotations.each do |other_currency, other_rate|
               next if currency == other_currency
-              set_rate(currency, other_currency, rate/other_rate)
+              set_rate(currency, other_currency, rate/other_rate, :without_mutex => true)
             end
           end
-#       end
+        end
       end
     end
   end
