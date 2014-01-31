@@ -1,4 +1,3 @@
-require 'money'
 require 'money/bank/ecb'
 
 describe 'ECB' do
@@ -57,9 +56,15 @@ describe 'ECB' do
   end
 
   describe '#update' do
-    let(:bank) do
-      assetsdir = File.dirname(__FILE__) + '/assets'
-      Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
+    let(:assetsdir) { File.dirname(__FILE__) + '/assets'}
+    let(:bank) { Money::Bank::ECB.new(assetsdir + '/good_rates.csv') }
+
+    before do
+      %x{cp #{assetsdir + '/good_rates.csv'} #{assetsdir + '/backup.csv'}}
+    end
+
+    after do
+      %x{mv #{assetsdir + '/backup.csv'} #{assetsdir + '/good_rates.csv'}}
     end
 
     it 'should update rates from ECB' do
