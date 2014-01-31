@@ -1,4 +1,4 @@
-FIXME-NAME
+money-ecb
 ==========
 
 .. image:: https://travis-ci.org/ct-clearhaus/money-ecb.png?branch=master
@@ -15,7 +15,7 @@ Installation
 
 .. code-block:: sh
 
-    gem install FIXME-NAME
+    gem install money-ecb
 
 Dependencies
 ------------
@@ -45,4 +45,4 @@ cache,
 
 .. code-block:: ruby
 
-    Money::Bank::ECB.instance.update
+    Money.default_bank.update
