@@ -1,6 +1,8 @@
 FIXME-NAME
 ==========
 
+.. image:: https://travis-ci.org/ct-clearhaus/money-ecb.png?branch=master
+    :target: https://travis-ci.org/ct-clearhaus/money-ecb
 
 Introduction
 ------------
