@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'money', :path => '../money'
+gem 'money'
 gem 'rubyzip'
 
 group :development do
