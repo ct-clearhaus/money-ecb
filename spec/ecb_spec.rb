@@ -2,21 +2,18 @@ require 'money'
 require 'money/bank/ecb'
 
 describe 'ECB' do
-# describe '#currencies' do
-#   subject(:currencies) do
-#     assetsdir = File.dirname(__FILE__) + '/assets'
-#     bank = Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
+  describe '#currencies' do
+    subject(:currencies) do
+      assetsdir = File.dirname(__FILE__) + '/assets'
+      bank = Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
 
-#     bank.currencies
-#   end
+      bank.currencies
+    end
 
-#   it 'should give 32 currencies' do
-#     expect(currencies.length).to eq(32)
-#   end
-# end
-
-# describe '#update' do
-# end
+    it 'should give 32 currencies' do
+      expect(currencies.length).to eq(32)
+    end
+  end
 
   describe '#exchange_with' do
     let(:good_rates) do
@@ -55,6 +52,36 @@ describe 'ECB' do
 
         factor = 1000 # To ensure non-zero values.
         expect(fx(factor*sub2u, cur, 'EUR').cents).to eq((factor*1/good_rates[cur]*100).floor)
+      end
+    end
+  end
+
+  describe '#update' do
+    let(:bank) do
+      assetsdir = File.dirname(__FILE__) + '/assets'
+      Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
+    end
+
+    it 'should update rates from ECB' do
+      bank.stub(:open) do
+        File.expand_path(File.dirname(__FILE__) + '/assets/eurofxref.zip')
+      end
+      bank.should_receive(:open).with(Money::Bank::ECB::RATES_URL)
+
+      expect(bank.rates_date).to eq('30 January 2014')
+      bank.update
+      expect(bank.rates_date).to eq('31 January 2014')
+    end
+  end
+
+  describe '#new' do
+    context 'when cache file is good' do
+      it 'should fetch use rates from cache' do
+      end
+    end
+
+    context 'when cache file is bogus' do
+      it 'should fetch rates from ECB' do
       end
     end
   end
