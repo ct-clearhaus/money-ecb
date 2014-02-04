@@ -35,7 +35,7 @@ Using ``money`` and ``monetize``:
 
     require 'money'
     require 'money/bank/ecb'
-    require 'monetize'
+    require 'monetize/core_extensions'
 
     Money.default_bank = Money::Bank::ECB.new('/tmp/ecb-fxr.cache')
 
@@ -54,14 +54,21 @@ cache,
 Rounding
 --------
 
-By default, ``Money::Bank``'s will truncate. If you prefer to
-round, ``#exchange_with`` will accept a block that will be yielded; that block
-you can use for rounding (and other purposes) when exchanging:
+By default, ``Money::Bank``'s will truncate. If you prefer to round, exchange
+methods will accept a block that will be yielded; that block is intended for
+rounding when exchanging (continuing from above):
 
 .. code-block:: ruby
 
-    ecb = Money::Bank::ECB.new('/tmp/ecb-fxr.cache')
-    ecb.exchange_with('1 EUR'.to_money, :USD) {|x| x.round}
+    puts '1 EUR'.to_money.exchange_to(:USD) {|x| x.round}
+
+
+Auto-update rates
+-----------------
+
+The European Central Bank publishes daily foreign exchange rates every day, and
+they should be available at 14:00 CET. To automatically update the cache, set
+``Money::Bank::ECB#auto_update = true``.
 
 
 Contribute
@@ -73,6 +80,6 @@ Contribute
 * ``bundle exec rake test``
 * Make your changes
 * Test your changes
-* Create a Pull Request
-* Celebrate!
-
+* Create a Pull Request and check `Travis
+  <https://travis-ci.org/ct-clearhaus/money-ecb/pull_requests>`_
+* Enjoy!
