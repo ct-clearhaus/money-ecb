@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'money'
 require 'open-uri'
+require 'bigdecimal'
 require 'zip'
 require 'csv'
 
@@ -47,15 +48,19 @@ class Money
         end
       end
 
+      # Load date and rates from the cache file.
+      #
+      # Be "loose" to accommodate for future changes in list of currencies etc.
       def load_from_cachefile
         csv = CSV.parse(File.open(@cache_filename).read, :headers => true)
 
+        # FIXME: Extract date based on header rather than position.
         date_pair, *rest = csv.first.map{|x,y| [x.strip, y.strip]}
 
         @mutex.synchronize do
-          @rates_date = date_pair[1]
+          @rates_date = Time.parse(date_pair[1] + ' 14:00:00 UTC')
 
-          quotations = Hash[rest.map{|cur,rate| [cur, rate.to_f]}]
+          quotations = Hash[rest.map{|cur,rate| [cur, BigDecimal.new(rate)]}]
           quotations.delete('')
 
           @currencies = quotations.keys
@@ -70,6 +75,8 @@ class Money
             end
           end
         end
+
+        true
       end
     end
   end
