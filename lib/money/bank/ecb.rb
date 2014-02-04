@@ -11,24 +11,22 @@ class Money
     class ECB < Money::Bank::VariableExchange
       RATES_URL = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref.zip'
 
-      class << self
-        attr_accessor :ttl_days
-      end
-
       def initialize(cache_filename, &rounding_method)
         @cache_filename = cache_filename
         setup
       end
+
+      attr_accessor :auto_update
 
       def setup
         super
         load_from_cachefile rescue update
       end
 
-#     def exchange_with(&rounding_method)
-#       update if
-#       super() # ()'s needed?
-#     end
+      def exchange_with(from, to, &rounding_method)
+        update if @auto_update and Time.now.utc > (@rates_date + 60*60*24)
+        super(from, to, &rounding_method)
+      end
 
       def update
         update_cachefile
