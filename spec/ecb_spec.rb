@@ -48,7 +48,13 @@ describe 'ECB' do
     end
 
     it 'should exchange correctly to EUR' do
+      puts 'FILE CONTENT:'
+      File.open(@tmpdir + '/good_rates.csv').each_line do |l|
+        puts l
+      end
+      puts 'RATES:'
       puts bank.rates
+      puts
       bank.currencies.each do |cur|
         sub2u = Money::Currency.wrap(cur).subunit_to_unit
 
