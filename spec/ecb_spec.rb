@@ -48,6 +48,7 @@ describe 'ECB' do
     end
 
     it 'should exchange correctly to EUR' do
+      puts bank.rates
       bank.currencies.each do |cur|
         sub2u = Money::Currency.wrap(cur).subunit_to_unit
 
