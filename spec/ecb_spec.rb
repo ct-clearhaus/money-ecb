@@ -1,15 +1,22 @@
 require 'money/bank/ecb'
 
 describe 'ECB' do
+  before do
+    @assetsdir = File.dirname(__FILE__) + '/assets'
+    @tmpdir = File.dirname(__FILE__) + '/tmp'
+    %x{cp -r #{@assetsdir} #{@tmpdir}}
+  end
+
+  let(:bank) { Money::Bank::ECB.new(@tmpdir + '/good_rates.csv') }
+
+  after do
+    %x{rm -rf #{@tmpdir}}
+  end
+
   describe '#currencies' do
-    subject(:currencies) do
-      assetsdir = File.dirname(__FILE__) + '/assets'
-      bank = Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
+    subject(:currencies) { bank.currencies }
 
-      bank.currencies
-    end
-
-    it 'should give 32 currencies' do
+    it 'should have 32 currencies' do
       expect(currencies.length).to eq(32)
     end
   end
@@ -26,11 +33,6 @@ describe 'ECB' do
         'MXN' => 18.1111, 'MYR' => 4.5417,   'NZD' => 1.6624,  'PHP' => 61.527,
         'SGD' => 1.7323,  'THB' => 44.745,   'ZAR' => 15.2700, 'ILS' => 4.7416,
       }
-    end
-
-    let(:bank) do
-      assetsdir = File.dirname(__FILE__) + '/assets'
-      Money::Bank::ECB.new(assetsdir + '/good_rates.csv')
     end
 
     def fx(cents, from, to)
@@ -53,44 +55,58 @@ describe 'ECB' do
         expect(fx(factor*sub2u, cur, 'EUR').cents).to eq((factor*1/good_rates[cur]*100).floor)
       end
     end
+
+    it 'should exchange correctly between non-EUR currencies'
   end
 
   describe '#update' do
-    let(:assetsdir) { File.dirname(__FILE__) + '/assets'}
-    let(:bank) { Money::Bank::ECB.new(assetsdir + '/good_rates.csv') }
-
-    before do
-      %x{cp #{assetsdir + '/good_rates.csv'} #{assetsdir + '/backup.csv'}}
-    end
-
-    after do
-      %x{mv #{assetsdir + '/backup.csv'} #{assetsdir + '/good_rates.csv'}}
-    end
-
     it 'should update rates from ECB' do
-      bank.stub(:open) do
-        File.expand_path(File.dirname(__FILE__) + '/assets/eurofxref.zip')
-      end
-      bank.should_receive(:open).with(Money::Bank::ECB::RATES_URL)
+      expect(bank).to receive(:open).with(Money::Bank::ECB::RATES_URL).and_return(
+        File.expand_path(@tmpdir + '/eurofxref.zip'))
 
-      expect(bank.rates_date).to eq('30 January 2014')
+      expect(bank.rates_date).to eq(Time.utc(2014, 01, 30, 14))
       bank.update
-      expect(bank.rates_date).to eq('31 January 2014')
+      expect(bank.rates_date).to eq(Time.utc(2014, 01, 31, 14))
     end
   end
 
   describe '#new' do
     context 'when cache file is good' do
-      it 'should fetch use rates from cache' do
-      end
+      it 'should fetch use rates from cache'
     end
 
     context 'when cache file is bogus' do
-      it 'should fetch rates from ECB' do
-      end
+      it 'should fetch rates from ECB'
     end
   end
 
-# describe 'Cache expiring' do
-# end
+  describe '#auto_update' do
+    it 'should be off by default' do
+      expect(bank.auto_update).to be_nil
+    end
+  end
+
+  context 'when auto_update is on' do
+    before(:each) { bank.auto_update = true }
+
+    context 'and cache file is new enough' do
+      describe '#exchange_with' do
+        it 'should not update cache' do
+          expect(Time).to receive(:now).and_return(bank.rates_date + 60*60*23)
+          expect(bank).not_to receive(:update)
+          bank.exchange_with(Money.new(100, :EUR), :USD)
+        end
+      end
+    end
+
+    context 'and cache file is old' do
+      describe '#exchange_with' do
+        it 'should update cache' do
+          expect(Time).to receive(:now).and_return(bank.rates_date + 60*60*25)
+          expect(bank).to receive(:update)
+          bank.exchange_with(Money.new(100, :EUR), :USD)
+        end
+      end
+    end
+  end
 end
