@@ -8,3 +8,6 @@ script: bundle exec rake test
 notifications:
   email: false
 cache: bundler
+matrix:
+  allow_failures:
+    rvm: 2.1.0
