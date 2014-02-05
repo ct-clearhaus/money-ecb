@@ -4,6 +4,8 @@ money-ecb
 .. image:: https://travis-ci.org/ct-clearhaus/money-ecb.png?branch=master
     :target: https://travis-ci.org/ct-clearhaus/money-ecb
 
+.. image:: https://codeclimate.com/github/ct-clearhaus/money-ecb.png
+    :target: https://codeclimate.com/github/ct-clearhaus/money-ecb
 
 Introduction
 ------------
