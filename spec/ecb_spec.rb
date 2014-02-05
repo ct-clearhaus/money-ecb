@@ -45,23 +45,43 @@ describe 'ECB' do
     end
 
     it 'should exchange correctly from EUR' do
-      bank.currencies.each do |cur|
-        sub2u = Money::Currency.wrap(cur).subunit_to_unit
+      bank.currencies.each do |to_cur|
+        from_cents = 100
+        to_cents = Money::Currency.wrap(to_cur).subunit_to_unit * good_rates[to_cur]
 
-        expect(fx(100, 'EUR', cur).cents).to eq((good_rates[cur]*sub2u).floor)
+        expect(fx(from_cents, 'EUR', to_cur).cents).to eq(to_cents.floor)
       end
     end
 
     it 'should exchange correctly to EUR' do
-      bank.currencies.each do |cur|
-        sub2u = Money::Currency.wrap(cur).subunit_to_unit
+      factor = 1000 # To ensure non-zero values.
 
-        factor = 1000 # To ensure non-zero values.
-        expect(fx(factor*sub2u, cur, 'EUR').cents).to eq((factor*1/good_rates[cur]*100).floor)
+      bank.currencies.each do |from_cur|
+        from_cents = factor * Money::Currency.wrap(from_cur).subunit_to_unit
+
+        rate = 1/good_rates[from_cur]
+        to_cents = factor * 100 * rate
+
+        expect(fx(from_cents, from_cur, 'EUR').cents).to eq(to_cents.floor)
       end
     end
 
-    it 'should exchange correctly between non-EUR currencies'
+    it 'should exchange correctly between non-EUR currencies' do
+      factor = 1000 # To ensure non-zero values.
+
+      bank.currencies.each do |from_cur|
+        from_cents = factor * Money::Currency.wrap(from_cur).subunit_to_unit
+
+        bank.currencies.each do |to_cur|
+          next if from_cur == to_cur
+
+          rate = good_rates[to_cur]/good_rates[from_cur]
+          to_cents = factor * Money::Currency.wrap(to_cur).subunit_to_unit * rate
+
+          expect(fx(from_cents, from_cur, to_cur).cents).to eq(to_cents.floor) rescue binding.pry
+        end
+      end
+    end
   end
 
   describe '#update' do
