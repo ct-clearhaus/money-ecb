@@ -42,7 +42,8 @@ Using ``money`` and ``monetize``:
     puts '1 EUR'.to_money.exchange_to(:USD)
 
 If ``/tmp/ecb-fxr.cache`` is a valid CSV file with exchange rates, the rates
-will be used for conversion. If the file does not exist, new rates will be
+will be used for conversion (unless newer rates are available; if so, new rates
+will be fetched—see `auto-update`_). If the file does not exist, new rates will be
 downloaded from the European Central Bank and stored in the file. To update the
 cache,
 
@@ -63,12 +64,15 @@ rounding when exchanging (continuing from above):
     puts '1 EUR'.to_money.exchange_to(:USD) {|x| x.round}
 
 
+.. _`auto-update`:
+
 Auto-update rates
 -----------------
 
 The European Central Bank publishes daily foreign exchange rates every day, and
-they should be available at 14:00 CET. To automatically update the cache, set
-``Money::Bank::ECB#auto_update = true``.
+they should be available at 14:00 CET. The cache is automatically updated when
+doing an exchange after new rates has been published; to disable this, set
+``Money::Bank::ECB#auto_update = false``.
 
 
 Contribute
