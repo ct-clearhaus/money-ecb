@@ -9,5 +9,6 @@ notifications:
   email: false
 cache: bundler
 matrix:
+  fast_finish: true
   allow_failures:
-    rvm: 2.1.0
+    - rvm: 2.1.0
