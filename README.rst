@@ -2,10 +2,17 @@ money-ecb
 ==========
 
 .. image:: https://travis-ci.org/ct-clearhaus/money-ecb.png?branch=master
+    :alt: Build Status
     :target: https://travis-ci.org/ct-clearhaus/money-ecb
 
 .. image:: https://codeclimate.com/github/ct-clearhaus/money-ecb.png
+    :alt: Code Climate
     :target: https://codeclimate.com/github/ct-clearhaus/money-ecb
+
+.. image:: https://gemnasium.com/ct-clearhaus/money-ecb.png
+    :alt: Dependency Status
+    :target: https://gemnasium.com/ct-clearhaus/money-ecb
+
 
 Introduction
 ------------
