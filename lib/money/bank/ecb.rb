@@ -54,13 +54,14 @@ class Money
       def load_from_cachefile
         csv = CSV.parse(File.open(@cache_filename).read, :headers => true)
 
-        # FIXME: Extract date based on header rather than position.
-        date_pair, *rest = csv.first.map{|x,y| [x.strip, y.strip]}
+        pairs = Hash[csv.first.map{|x,y| [x.strip, y.strip]}]
+        pairs.delete('')
+        date_s = pairs.delete('Date')
 
         @mutex.synchronize do
-          @rates_date = Time.parse(date_pair[1] + ' 14:00:00 UTC')
+          @rates_date = Time.parse(date_s + ' 14:00:00 UTC')
 
-          quotations = Hash[rest.map{|cur,rate| [cur, BigDecimal.new(rate)]}]
+          quotations = Hash[pairs.map{|cur,rate| [cur, BigDecimal.new(rate)]}]
           quotations.delete('')
 
           @currencies = quotations.keys
