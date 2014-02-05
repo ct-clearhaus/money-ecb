@@ -1,4 +1,5 @@
 require 'money/bank/ecb'
+require_relative 'support/custom_expectations/write_expectation'
 
 describe 'ECB' do
   before do
@@ -86,8 +87,7 @@ describe 'ECB' do
 
   describe '#update' do
     it 'should update rates from ECB' do
-      expect(bank).to receive(:open).with(Money::Bank::ECB::RATES_URL).and_return(
-        File.expand_path(@tmpdir + '/eurofxref.zip'))
+      expect(bank).to receive(:open).with(Money::Bank::ECB::RATES_URL).and_return(File.expand_path(@tmpdir + '/eurofxref.zip'))
 
       expect(bank.rates_date).to eq(Time.utc(2014, 01, 30, 14))
       bank.update
@@ -96,12 +96,41 @@ describe 'ECB' do
   end
 
   describe '#new' do
+    before(:each) { bank.auto_update = false }
+
+    let(:good_rates) do
+      {
+        'USD' => 1.3574,  'JPY' => 139.28,   'BGN' => 1.9558,  'CZK' => 27.594,
+        'DKK' => 7.4622,  'GBP' => 0.82380,  'HUF' => 310.97,  'LTL' => 3.4528,
+        'PLN' => 4.2312,  'RON' => 4.5110,   'SEK' => 8.8347,  'CHF' => 1.2233,
+        'NOK' => 8.4680,  'HRK' => 7.6605,   'RUB' => 47.8025, 'TRY' => 3.0808,
+        'AUD' => 1.5459,  'BRL' => 3.2955,   'CAD' => 1.5176,  'CNY' => 8.2302,
+        'HKD' => 10.5421, 'IDR' => 16551.39, 'INR' => 85.0840, 'KRW' => 1469.53,
+        'MXN' => 18.1111, 'MYR' => 4.5417,   'NZD' => 1.6624,  'PHP' => 61.527,
+        'SGD' => 1.7323,  'THB' => 44.745,   'ZAR' => 15.2700, 'ILS' => 4.7416,
+      }
+    end
+
     context 'when cache file is good' do
-      it 'should fetch use rates from cache'
+      it 'should use rates from cache' do
+        expect(bank.rates_date).to eq(Time.utc(2014, 01, 30, 14))
+        bank.currencies.each do |cur|
+          expect(bank.rates['EUR_TO_' + cur]).to eq(good_rates[cur])
+        end
+      end
     end
 
     context 'when cache file is bogus' do
-      it 'should fetch rates from ECB'
+      it 'should fetch rates from ECB' do
+        expect{
+          Money::Bank::ECB::RATES_URL = File.expand_path(@tmpdir + '/eurofxref.zip')
+        }.to write('warning: already initialized constant RATES_URL').to(:stderr)
+
+        bogus = Money::Bank::ECB.new(@tmpdir + '/bogus_rates.csv')
+        bogus.auto_update = false
+
+        expect(bogus.rates_date).to eq(Time.utc(2014, 01, 31, 14))
+      end
     end
   end
 
