@@ -7,7 +7,12 @@ describe 'ECB' do
     %x{cp -r #{@assetsdir} #{@tmpdir}}
   end
 
-  let(:bank) { Money::Bank::ECB.new(@tmpdir + '/good_rates.csv') }
+  let(:bank) do
+    bank = Money::Bank::ECB.new(@tmpdir + '/good_rates.csv')
+    bank.auto_update = false
+
+    bank
+  end
 
   after do
     %x{rm -rf #{@tmpdir}}
@@ -81,8 +86,8 @@ describe 'ECB' do
   end
 
   describe '#auto_update' do
-    it 'should be off by default' do
-      expect(bank.auto_update).to be_nil
+    it 'should be on by default' do
+      expect(Money::Bank::ECB.new(@tmpdir + '/good_rates.csv').auto_update).to be_true
     end
   end
 

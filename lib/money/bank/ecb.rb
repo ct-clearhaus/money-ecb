@@ -21,6 +21,7 @@ class Money
 
       def setup
         super
+        @auto_update = true
         load_from_cachefile rescue update
       end
 
