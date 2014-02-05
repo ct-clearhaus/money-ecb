@@ -48,29 +48,10 @@ describe 'ECB' do
     end
 
     it 'should exchange correctly to EUR' do
-      puts 'FILE CONTENT:'
-      File.open(@tmpdir + '/good_rates.csv').each_line do |l|
-        puts l
-      end
-      puts 'RATES:'
-      puts bank.rates
-      puts
       bank.currencies.each do |cur|
         sub2u = Money::Currency.wrap(cur).subunit_to_unit
 
         factor = 1000 # To ensure non-zero values.
-
-        equal_rates = bank.rates[cur + '_TO_EUR'] == (1/BigDecimal.new(good_rates[cur].to_s))
-        puts fx(factor*sub2u, cur, 'EUR').cents.to_s + cur + ' -> ' +
-          (factor/good_rates[cur]*100).floor.to_s + 'EUR' +
-          ' (sub2u: ' + sub2u.to_s +
-          ', equal_rates? ' + equal_rates.to_s +
-          ', ad hoc rate: ' + (1/BigDecimal.new(good_rates[cur].to_s)).to_s +
-          ', bank rate: ' + bank.rates[cur + '_TO_EUR'].to_s +
-          ', from-money: ' + Money.new(factor*sub2u, cur).inspect +
-          ', to-money: ' + bank.exchange_with(Money.new(factor*sub2u, cur), 'EUR').inspect +
-          ')'
-
         expect(fx(factor*sub2u, cur, 'EUR').cents).to eq((factor*1/good_rates[cur]*100).floor)
       end
     end
