@@ -73,7 +73,7 @@ class Money
 
             quotations.each do |other_currency, other_rate|
               next if currency == other_currency
-              set_rate(currency, other_currency, rate/other_rate, :without_mutex => true)
+              set_rate(currency, other_currency, other_rate/rate, :without_mutex => true)
             end
           end
         end
