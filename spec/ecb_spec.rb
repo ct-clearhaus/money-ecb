@@ -124,7 +124,7 @@ describe 'ECB' do
       it 'should fetch rates from ECB' do
         expect{
           Money::Bank::ECB::RATES_URL = File.expand_path(@tmpdir + '/eurofxref.zip')
-        }.to write('warning: already initialized constant RATES_URL').to(:stderr)
+        }.to write(/warning: already initialized constant .*RATES_URL/).to(:stderr)
 
         bogus = Money::Bank::ECB.new(@tmpdir + '/bogus_rates.csv')
         bogus.auto_update = false
