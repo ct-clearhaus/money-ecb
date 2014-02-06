@@ -1,3 +1,4 @@
 *.swp
 .bundle
 money-ecb-*.gem
+.yardoc
