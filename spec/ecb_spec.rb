@@ -85,13 +85,24 @@ describe 'ECB' do
     end
   end
 
-  describe '#update' do
-    it 'should update rates from ECB' do
+  describe '#update_cache and #reload' do
+    it 'should update rates from ECB and should load rates from the cache file, resp.' do
       expect(bank).to receive(:open).with(Money::Bank::ECB::RATES_URL).and_return(File.expand_path(@tmpdir + '/eurofxref.zip'))
 
       expect(bank.rates_date).to eq(Time.utc(2014, 01, 30, 14))
-      bank.update
+      bank.update_cache
+      expect(bank.rates_date).to eq(Time.utc(2014, 01, 30, 14))
+      bank.reload
       expect(bank.rates_date).to eq(Time.utc(2014, 01, 31, 14))
+    end
+  end
+
+  describe '#update' do
+    it 'should do #update_cache and #reload' do
+      expect(bank).to receive(:update_cache)
+      expect(bank).to receive(:reload)
+
+      bank.update
     end
   end
 
@@ -140,16 +151,27 @@ describe 'ECB' do
     end
   end
 
-  describe '#reload' do
+  describe '#cache_content' do
     context 'when cache file is good' do
-      it 'should load rates from the cache'
-    end
-    context 'when cache file is bogus' do
-      context 'when #auto_update is on' do
-        it 'should fetch new rates'
+      it 'should return correct date and quotations' do
+        time, quotations = bank.send(:cache_content)
+
+        expect(time).to be_a(Time)
+        expect(time).to eq(Time.utc(2014, 1, 30, 14))
+        expect(quotations).to be_a(Hash)
+        expect(quotations.keys).to include('USD', 'DKK', 'JPY', 'ILS')
       end
-      context 'when #auto_update is off' do
-        it 'should throw the InvalidCacheError'
+    end
+
+    context 'when cache file is bogus' do
+      it 'should raise an InvalidCacheError' do
+        expect(bank.rates_date).to eq(Time.utc(2014, 1, 30, 14))
+        # Make cache bogus.
+        %x{cp #{@tmpdir}/bogus_rates.csv #{@tmpdir}/good_rates.csv}
+
+        expect{
+          bank.send(:cache_content)
+        }.to raise_error(Money::Bank::ECB::InvalidCacheError)
       end
     end
   end
