@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'money-ecb'
-  s.version     = '0.0.1'
+  s.version     = '0.0.2'
   s.summary     = 'Foreign exchange rates from the EU Central Bank (ECB).'
   s.description = 'A Money::Bank that will fetch foreign exchange rates from the EU Central Bank (ECB).'
   s.authors     = ['Casper Thomsen']
