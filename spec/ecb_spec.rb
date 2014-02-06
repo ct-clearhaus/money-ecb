@@ -79,7 +79,7 @@ describe 'ECB' do
           rate = good_rates[to_cur]/good_rates[from_cur]
           to_cents = factor * Money::Currency.wrap(to_cur).subunit_to_unit * rate
 
-          expect(fx(from_cents, from_cur, to_cur).cents).to eq(to_cents.floor) rescue binding.pry
+          expect(fx(from_cents, from_cur, to_cur).cents).to eq(to_cents.floor)
         end
       end
     end
@@ -158,8 +158,8 @@ describe 'ECB' do
 
         expect(time).to be_a(Time)
         expect(time).to eq(Time.utc(2014, 1, 30, 14))
-        expect(quotations).to be_a(Hash)
-        expect(quotations.keys).to include('USD', 'DKK', 'JPY', 'ILS')
+        expect(quotations).to be_a(Array)
+        expect(quotations.map{|key,_| key}).to include('USD', 'DKK', 'JPY', 'ILS')
       end
     end
 

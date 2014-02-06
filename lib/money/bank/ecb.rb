@@ -132,17 +132,19 @@ class Money
 
         @mutex.synchronize do
           @rates_date = time
-          @currencies = quotations.keys
+          @currencies = quotations.map{|key, _| key}
 
           quotations.each do |currency, rate|
             set_rate('EUR', currency, rate, :without_mutex => true)
             set_rate(currency, 'EUR', 1/rate, :without_mutex => true)
+          end
 
-            quotations.each do |other_currency, other_rate|
-              next if currency == other_currency
+          quotations.product(quotations) do |one, another|
+            one_cur, one_rate = one
+            another_cur, another_rate = another
+            next if one_cur == another_cur
 
-              set_rate(currency, other_currency, other_rate/rate, :without_mutex => true)
-            end
+            set_rate(one_cur, another_cur, another_rate/one_rate, :without_mutex => true)
           end
         end
 
@@ -159,13 +161,14 @@ class Money
         csv = csv.first # Only one line.
 
         # Clean-up
-        hash = Hash[csv.map{|x,y| [x.strip, y.strip]}]
-        hash.delete('')
+        csv = csv.map{|key, value| [key.strip, value.strip]}
+                 .delete_if{|key, _| key.empty?}
 
-        date = hash.delete('Date')
+        date_entry, *quotations = *csv
+        _, date = date_entry
 
         time = Time.parse(date + ' ' + self.class.new_rates_time_of_day_s(date))
-        quotations = Hash[hash.map{|cur,rate| [cur, BigDecimal.new(rate)]}]
+        quotations.map!{|cur,rate| [cur, BigDecimal.new(rate)]}
 
         [time, quotations]
       rescue
