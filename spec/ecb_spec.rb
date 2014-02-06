@@ -140,6 +140,20 @@ describe 'ECB' do
     end
   end
 
+  describe '#reload' do
+    context 'when cache file is good' do
+      it 'should load rates from the cache'
+    end
+    context 'when cache file is bogus' do
+      context 'when #auto_update is on' do
+        it 'should fetch new rates'
+      end
+      context 'when #auto_update is off' do
+        it 'should throw the InvalidCacheError'
+      end
+    end
+  end
+
   context 'when auto_update is on' do
     before(:each) { bank.auto_update = true }
 
