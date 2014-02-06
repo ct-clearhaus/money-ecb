@@ -23,6 +23,10 @@ class Money
     #   @param [true,false] bool
     #   @return [true,false]
     #
+    # @!attribute [r] cache_filename
+    #   The cache path and file name
+    #   @return[String]
+    #
     # @!attribute [r] rates_date
     #   The time on which ECB published the rates that is currently in use.
     #   @return[Time]
@@ -57,6 +61,7 @@ class Money
         setup
       end
 
+      attr_reader :cache_filename
       attr_reader :rounding_method
       attr_accessor :auto_update
 
@@ -93,16 +98,16 @@ class Money
       #
       # @return [self]
       def update
-        update_cachefile
+        update_cache
         reload
 
         self
       end
 
-      # Update the cache file.
+      # Update the cache.
       #
       # @return [self]
-      def update_cachefile
+      def update_cache
         File.open(@cache_filename, 'w') do |cache_file|
           Zip::InputStream.open(open(RATES_URL)) do |io|
             io.get_next_entry
@@ -120,12 +125,13 @@ class Money
       #
       # Be "loose" to accommodate for future changes in list of currencies etc.
       #
+      # @raise [InvalidCacheError] if cache is bogus.
       # @return [self]
       def reload
-        date, quotations = cache_content
+        time, quotations = cache_content
 
         @mutex.synchronize do
-          @rates_date = Time.parse(date + ' ' + self.class.new_rates_time_of_day_s)
+          @rates_date = time
           @currencies = quotations.keys
 
           quotations.each do |currency, rate|
@@ -157,12 +163,13 @@ class Money
         hash.delete('')
 
         date = hash.delete('Date')
+
+        time = Time.parse(date + ' ' + self.class.new_rates_time_of_day_s(date))
         quotations = Hash[hash.map{|cur,rate| [cur, BigDecimal.new(rate)]}]
 
-        # FIXME: Check that date and quotations are good. Otherwise, throw
-        # InvalidCacheError.
-
-        [date, quotations]
+        [time, quotations]
+      rescue
+        raise InvalidCacheError
       end
 
       # Time of day (as a string ready for Time.parse) at which ECB publishes
@@ -170,7 +177,7 @@ class Money
       #
       # @return [String] Either '13:00:00 UTC' or '14:00:00 UTC' depending on
       #   DST.
-      def self.new_rates_time_of_day_s
+      def self.new_rates_time_of_day_s(date)
         # FIXME: It should be off by one day!
 
         # 15:00 ECB local time = 14:00 UTC when CET, 13:00 UTC when CEST.
@@ -193,27 +200,27 @@ class Money
         #
         # Where are we relative to the Sunday-diagonal?
 
-        now = Time.now
+        time = Time.parse(date)
 
-        on = now.day >= 25 && now.sunday?
+        on = time.day >= 25 && time.sunday?
         above =
-          (now.day == 26 && [1].include?(now.wday)) ||
-          (now.day == 27 && [2,1].include?(now.wday)) ||
-          (now.day == 28 && [3,2,1].include?(now.wday)) ||
-          (now.day == 29 && [4,3,2,1].include?(now.wday)) ||
-          (now.day == 30 && [5,4,3,2,1].include?(now.wday)) ||
-          (now.day == 31 && [6,5,4,3,2,1].include?(now.wday))
+          (time.day == 26 && [1].include?(time.wday)) ||
+          (time.day == 27 && [2,1].include?(time.wday)) ||
+          (time.day == 28 && [3,2,1].include?(time.wday)) ||
+          (time.day == 29 && [4,3,2,1].include?(time.wday)) ||
+          (time.day == 30 && [5,4,3,2,1].include?(time.wday)) ||
+          (time.day == 31 && [6,5,4,3,2,1].include?(time.wday))
         below =
-          (now.day == 25 && [6,5,4,3,2,1].include?(now.wday)) ||
-          (now.day == 26 && [6,5,4,3,2].include?(now.wday)) ||
-          (now.day == 27 && [6,5,4,3].include?(now.wday)) ||
-          (now.day == 28 && [6,5,4].include?(now.wday)) ||
-          (now.day == 29 && [6,5].include?(now.wday)) ||
-          (now.day == 30 && [6].include?(now.wday))
+          (time.day == 25 && [6,5,4,3,2,1].include?(time.wday)) ||
+          (time.day == 26 && [6,5,4,3,2].include?(time.wday)) ||
+          (time.day == 27 && [6,5,4,3].include?(time.wday)) ||
+          (time.day == 28 && [6,5,4].include?(time.wday)) ||
+          (time.day == 29 && [6,5].include?(time.wday)) ||
+          (time.day == 30 && [6].include?(time.wday))
 
-        cest = (4..9).include?(now.month) ||
-          (now.month ==  3 && (on || above)) ||
-          (now.month == 10 && (on || below))
+        cest = (4..9).include?(time.month) ||
+          (time.month ==  3 && (on || above)) ||
+          (time.month == 10 && (on || below))
 
         cest ? '13:00:00 UTC' : '14:00:00 UTC'
       end
