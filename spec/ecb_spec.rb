@@ -8,15 +8,16 @@ describe 'ECB' do
     %x{cp -r #{@assetsdir} #{@tmpdir}}
   end
 
+  after do
+    %x{rm -rf #{@tmpdir}}
+  end
+
   let(:bank) do
-    bank = Money::Bank::ECB.new(@tmpdir + '/good_rates.csv')
+    cache = Money::Bank::ECB::CacheFile.new(@tmpdir + '/good_rates.csv')
+    bank = Money::Bank::ECB.new(cache)
     bank.auto_update = false
 
     bank
-  end
-
-  after do
-    %x{rm -rf #{@tmpdir}}
   end
 
   describe '#currencies' do
@@ -25,6 +26,11 @@ describe 'ECB' do
     it 'should have 32 currencies' do
       expect(currencies.length).to eq(32)
     end
+
+    #it 'should include USD, DKK, SEK, NOK, GBP' do
+    it {
+      expect(currencies).to include('USD', 'DKK', 'SEK', 'NOK', 'GBP')
+    }
   end
 
   describe '#exchange_with' do
@@ -137,7 +143,8 @@ describe 'ECB' do
           Money::Bank::ECB::RATES_URL = File.expand_path(@tmpdir + '/eurofxref.zip')
         }.to write(/warning: already initialized constant .*RATES_URL/).to(:stderr)
 
-        bogus = Money::Bank::ECB.new(@tmpdir + '/bogus_rates.csv')
+        bogus_cache = Money::Bank::ECB::CacheFile.new(@tmpdir + '/bogus_rates.csv')
+        bogus = Money::Bank::ECB.new(bogus_cache)
         bogus.auto_update = false
 
         expect(bogus.rates_date).to eq(Time.utc(2014, 01, 31, 14))
@@ -147,7 +154,7 @@ describe 'ECB' do
 
   describe '#auto_update' do
     it 'should be on by default' do
-      expect(Money::Bank::ECB.new(@tmpdir + '/good_rates.csv').auto_update).to be_true
+      expect(Money::Bank::ECB.new(Money::Bank::ECB::CacheFile.new(@tmpdir + '/good_rates.csv')).auto_update).to be_true
     end
   end
 

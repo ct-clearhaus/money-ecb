@@ -5,6 +5,9 @@ require 'bigdecimal'
 require 'zip'
 require 'csv'
 
+require 'money/bank/ecb/cache'
+require 'money/bank/ecb/cache_file'
+
 class Money
   module Bank
     # This class represents the European Central Bank or more precisely, its
@@ -14,7 +17,7 @@ class Money
     #   The available currencies to exchange between.
     #   @return [Array<String>]
     #
-    # @!attribute [r] rounding_method
+    # @!attribute [r] rounding
     #   The default rounding method for the bank.
     #   @return [Proc]
     #
@@ -23,7 +26,7 @@ class Money
     #   @param [true,false] bool
     #   @return [true,false]
     #
-    # @!attribute [r] cache_filename
+    # @!attribute [r] cache
     #   The cache path and file name
     #   @return[String]
     #
@@ -47,22 +50,21 @@ class Money
       # @return [Money::Bank::ECB]
       #
       # @example
-      #   Money::Bank::ECB.new('/tmp/ecb.cache') {|x| x.floor}
+      #   Money::Bank::ECB.new {|x| x.floor}
       #   #=> #<Money::Bank::ECB
-      #         @cache_filename='/tmp/ecb.cache',
-      #         @rounding_method=#<Proc>,
+      #         @rounding=#<Proc>,
       #         @auto_update=true,
       #         @rates=#<Hash>,
       #         @rates_date=#<Time>,
       #         @currencies=#<Array>>
-      def initialize(cache_filename, &rounding_method)
-        @cache_filename  = cache_filename
-        @rounding_method = rounding_method
+      def initialize(cache = Money::Bank::ECB::Cache.new, &rounding)
+        @cache    = cache
+        @rounding = rounding
         setup
       end
 
-      attr_reader :cache_filename
-      attr_reader :rounding_method
+      attr_reader :cache
+      attr_reader :rounding
       attr_accessor :auto_update
 
       # Setup rates hash, mutex for rates locking, and auto_update default.
@@ -86,10 +88,9 @@ class Money
       #
       # @example
       #   ecb.exchange_with(Money.new(100, :EUR), :USD)
-      #   #=> #<Money
-      def exchange_with(from, to, &rounding_method)
+      def exchange_with(from, to, &rounding)
         update if @auto_update and Time.now.utc > (@rates_date + 60*60*24)
-        super(from, to, &rounding_method)
+        super(from, to, &rounding)
       end
 
       # Update the cache file and load the new rates.
@@ -108,10 +109,10 @@ class Money
       #
       # @return [self]
       def update_cache
-        File.open(@cache_filename, 'w') do |cache_file|
+        @cache.set do
           Zip::InputStream.open(open(RATES_URL)) do |io|
             io.get_next_entry
-            cache_file.puts(io.read)
+            io.read
           end
         end
 
@@ -157,7 +158,7 @@ class Money
       #
       # @return [[Time, Hash]]
       def cache_content
-        csv = CSV.parse(File.open(@cache_filename).read, :headers => true)
+        csv = CSV.parse(@cache.get, :headers => true)
         csv = csv.first # Only one line.
 
         # Clean-up
