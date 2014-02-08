@@ -113,9 +113,9 @@ Can I code my own cache?
 
 Yes, just :ruby:`include Money::Bank::ECB::Cache` and implement
 :ruby:`.new_from?` (if you accept what :ruby:`.new` was given) and
-:ruby:`.priority` (let it be :math:`\geq` :ruby:`2` since :ruby:`0` and
-:ruby:`1` are already used for :ruby:`SimpleCache` and :ruby:`CacheFile`
-respectively). No monkey patching needed!
+:ruby:`.priority` (let it be ``=> 2`` since ``0`` and ``1`` are already used for
+:ruby:`SimpleCache` and :ruby:`CacheFile` respectively). No monkey patching
+needed!
 
 
 Contribute
