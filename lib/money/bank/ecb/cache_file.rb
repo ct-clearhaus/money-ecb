@@ -1,19 +1,28 @@
 class Money
   module Bank
     class ECB < Money::Bank::VariableExchange
-      class CacheFile < Cache
-        def initialize(path = '/tmp/money-ecb-cache.csv')
-          @path = path
+      class CacheFile
+        include Cache
+
+        def initialize(*path)
+          @path = path.first
         end
+        attr_reader :path
+
+        def self.new_from?(*path)
+          path = path.first
+          File.readable?(path) && File.writable?(path)
+        rescue
+          false
+        end
+        def self.priority; 1 end
 
         def set(&block)
-          File.open(@path, 'w') do |file|
-            file.puts(yield)
-          end
+          File.write(@path, yield)
         end
 
         def get
-          File.open(@path).read
+          File.read(@path)
         end
       end
     end

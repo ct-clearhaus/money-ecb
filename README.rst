@@ -56,15 +56,9 @@ Using ``money`` and ``monetize``:
     require 'money/bank/ecb'
     require 'monetize/core_extensions'
 
-    Money.default_bank = Money::Bank::ECB.new('/tmp/ecb.cache')
+    Money.default_bank = Money::Bank::ECB.new
 
     puts '1 EUR'.to_money.exchange_to(:USD)
-
-If ``/tmp/ecb.cache`` is a valid CSV file with exchange rates, the rates will be
-used for conversion (unless newer rates are available; if so, new rates will be
-fetched—see `auto-update`_). If the file does not exist or is "somehow bogus",
-new rates will be downloaded from the European Central Bank and stored in the
-file.
 
 
 Rounding
@@ -81,7 +75,19 @@ creating the ``ECB`` instance:
 
 .. code-block:: ruby
 
-    Money.default_bank = Money::Bank::ECB.new('/tmp/ecb.cache') {|x| x.round}
+    Money.default_bank = Money::Bank::ECB.new {|x| x.round}
+
+Local cache file
+----------------
+
+For your convenience, :ruby:`.new` will accept a string representing a file
+path.
+
+If the file path holds a valid CSV file with exchange rates, the rates will be
+used for conversion (unless newer rates are available; if so, new rates will be
+fetched—see `auto-update`_). If the file does not exist or is "somehow bogus",
+new rates will be downloaded from the European Central Bank and stored in the
+file (or an :ruby:`InvalidCacheError` will be raise if `auto-update`_ is off).
 
 
 .. _`auto-update`:
@@ -92,12 +98,24 @@ Auto-update rates
 The European Central Bank publishes foreign exchange rates daily, and they
 should be available at 14:00 CE(S)T. The cache is automatically updated when
 doing an exchange after new rates has been published; to disable this, set
-:ruby:`Money::Bank::ECB#auto_update = false`.
+:ruby:`#auto_update = false`; to force, :ruby:`#update_cache` and
+:ruby:`#reload` (or both in one take, :ruby:`#update`).
 
-Also notice that when instantiating an ``ECB`` rates will be loaded from the
-cache file, and if that fails, new rates will be fetched automatically. So if
-you want to handle updating rates "by hand", you should place a valid cache
-before ``ECB.new`` and then call ``#reload`` after you updated the cache.
+Also notice that when instantiating an :ruby:`ECB`, rates will be loaded from
+the cache file, and if that fails, new rates will be fetched automatically. So
+if you want to handle updating rates "by hand", you should place a valid cache
+before :ruby:`.new` and then call :ruby:`#reload` after you updated the cache.
+
+.. _`Can I code my own cache?`:
+
+Can I code my own cache?
+------------------------
+
+Yes, just :ruby:`include Money::Bank::ECB::Cache` and implement
+:ruby:`.new_from?` (if you accept what :ruby:`.new` was given) and
+:ruby:`.priority` (let it be :math:`\geq` :ruby:`2` since :ruby:`0` and
+:ruby:`1` are already used for :ruby:`SimpleCache` and :ruby:`CacheFile`
+respectively). No monkey patching needed!
 
 
 Contribute

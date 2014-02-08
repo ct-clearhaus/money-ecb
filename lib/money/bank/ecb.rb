@@ -5,7 +5,9 @@ require 'bigdecimal'
 require 'zip'
 require 'csv'
 
+# Cache require order is important!
 require 'money/bank/ecb/cache'
+require 'money/bank/ecb/simple_cache'
 require 'money/bank/ecb/cache_file'
 
 class Money
@@ -16,10 +18,6 @@ class Money
     # @!attribute [r] currencies
     #   The available currencies to exchange between.
     #   @return [Array<String>]
-    #
-    # @!attribute [r] rounding
-    #   The default rounding method for the bank.
-    #   @return [Proc]
     #
     # @!attribute [rw] auto_update
     #   Auto-updating on or off.
@@ -52,19 +50,19 @@ class Money
       # @example
       #   Money::Bank::ECB.new {|x| x.floor}
       #   #=> #<Money::Bank::ECB
-      #         @rounding=#<Proc>,
+      #         @rounding_method=#<Proc>,
       #         @auto_update=true,
       #         @rates=#<Hash>,
       #         @rates_date=#<Time>,
       #         @currencies=#<Array>>
-      def initialize(cache = Money::Bank::ECB::Cache.new, &rounding)
-        @cache    = cache
-        @rounding = rounding
+      def initialize(cache_params = [], &rounding_method)
+        @cache = Money::Bank::ECB::Cache.build(cache_params)
+        super(&rounding_method)
+
         setup
       end
 
       attr_reader :cache
-      attr_reader :rounding
       attr_accessor :auto_update
 
       # Setup rates hash, mutex for rates locking, and auto_update default.
@@ -88,9 +86,9 @@ class Money
       #
       # @example
       #   ecb.exchange_with(Money.new(100, :EUR), :USD)
-      def exchange_with(from, to, &rounding)
+      def exchange_with(from, to, &rounding_method)
         update if @auto_update and Time.now.utc > (@rates_date + 60*60*24)
-        super(from, to, &rounding)
+        super(from, to, &rounding_method)
       end
 
       # Update the cache file and load the new rates.
