@@ -2,8 +2,6 @@ class Money
   module Bank
     class ECB < Money::Bank::VariableExchange
       module Cache
-        include Enumerable
-
         def initialize(*); end
         def self.new_from?(*); false end
         def self.priority; -1 end
