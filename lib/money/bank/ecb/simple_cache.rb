@@ -4,11 +4,8 @@ class Money
       class SimpleCache
         include Cache
 
-        def self.new_from?(*); true end
-        def self.priority; 0 end
-
-        def set(&block)
-          @content = yield
+        def set(value)
+          @content = value
         end
 
         def get

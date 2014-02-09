@@ -55,11 +55,26 @@ class Money
       #         @rates=#<Hash>,
       #         @rates_date=#<Time>,
       #         @currencies=#<Array>>
-      def initialize(cache_params = [], &rounding_method)
-        @cache = Money::Bank::ECB::Cache.build(cache_params)
+      def initialize(cache = nil, &rounding_method)
+        @cache = self.class.build(cache)
         super(&rounding_method)
 
         setup
+      end
+
+      # Builds a Cache from input.
+      #
+      # @param [*] something The thing to build a Cache from.
+      # @return [Cache]
+      def self.build(cache)
+        case cache
+        when Money::Bank::ECB::Cache
+          cache
+        when String
+          Money::Bank::ECB::CacheFile.new(cache)
+        else
+          Money::Bank::ECB::SimpleCache.new
+        end
       end
 
       attr_reader :cache
@@ -107,11 +122,9 @@ class Money
       #
       # @return [self]
       def update_cache
-        @cache.set do
-          Zip::InputStream.open(open(RATES_URL)) do |io|
-            io.get_next_entry
-            io.read
-          end
+        Zip::InputStream.open(open(RATES_URL)) do |io|
+          io.get_next_entry
+          @cache.set(io.read)
         end
 
         self

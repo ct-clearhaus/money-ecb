@@ -4,21 +4,13 @@ class Money
       class CacheFile
         include Cache
 
-        def initialize(*path)
-          @path = path.first
+        def initialize(path)
+          @path = path
         end
         attr_reader :path
 
-        def self.new_from?(*path)
-          path = path.first
-          File.readable?(path) && File.writable?(path)
-        rescue
-          false
-        end
-        def self.priority; 1 end
-
-        def set(&block)
-          File.write(@path, yield)
+        def set(value)
+          File.write(@path, value)
         end
 
         def get
