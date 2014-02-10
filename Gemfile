@@ -8,6 +8,10 @@ group :test do
   gem 'rake'
 end
 
+group :coverage do
+  gem 'coveralls', require: false
+end
+
 group :development do
   gem 'pry'
 end
