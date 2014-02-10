@@ -11,6 +11,7 @@ class Money
 
         def set(value)
           File.write(@path, value)
+          value
         end
 
         def get
