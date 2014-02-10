@@ -15,6 +15,10 @@ money-ecb
     :alt: Code Climate
     :target: https://codeclimate.com/github/ct-clearhaus/money-ecb
 
+.. image:: https://coveralls.io/repos/ct-clearhaus/money-ecb/badge.png
+    :alt: Coveralls
+    :target: https://coveralls.io/r/ct-clearhaus/money-ecb
+
 .. image:: https://gemnasium.com/ct-clearhaus/money-ecb.png
     :alt: Dependency Status
     :target: https://gemnasium.com/ct-clearhaus/money-ecb

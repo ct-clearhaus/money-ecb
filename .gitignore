@@ -2,3 +2,4 @@
 .bundle
 money-ecb-*.gem
 .yardoc
+coverage
