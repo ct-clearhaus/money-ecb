@@ -3,3 +3,4 @@
 money-ecb-*.gem
 .yardoc
 coverage
+Gemfile.lock
