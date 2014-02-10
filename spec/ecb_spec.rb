@@ -1,7 +1,7 @@
 require 'money/bank/ecb'
 require_relative 'support/custom_expectations/write_expectation'
 
-describe 'ECB' do
+describe 'Money::Bank::ECB' do
   before do
     @assetsdir = File.dirname(__FILE__) + '/assets'
     @tmpdir = File.dirname(__FILE__) + '/tmp'
