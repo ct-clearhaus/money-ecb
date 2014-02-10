@@ -23,6 +23,9 @@ money-ecb
     :alt: Dependency Status
     :target: https://gemnasium.com/ct-clearhaus/money-ecb
 
+.. image:: http://img.shields.io/license/MIT.png?color=green
+    :alt: MIT License
+    :target: http://opensource.org/licenses/MIT
 
 Introduction
 ------------
