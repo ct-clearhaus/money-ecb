@@ -48,7 +48,7 @@ Dependencies
 Example
 -------
 
-Using ``money`` and ``monetize``:
+Using Money and Monetize:
 
 .. code-block:: ruby
 
@@ -64,14 +64,14 @@ Using ``money`` and ``monetize``:
 Rounding
 --------
 
-By default, ``Money::Bank``'s will truncate. If you prefer to round:
+By default, :ruby:`Money::Bank`\ s will truncate. If you prefer to round:
 
 .. code-block:: ruby
 
     puts '1 EUR'.to_money.exchange_to(:USD) {|x| x.round}
 
 If you would like to have rounding done by default, you can set the default when
-creating the ``ECB`` instance:
+creating the bank:
 
 .. code-block:: ruby
 
@@ -81,13 +81,13 @@ Local cache file
 ----------------
 
 For your convenience, :ruby:`.new` will accept a string representing a file
-path.
+path (or a :ruby:`Money::Bank::ECB::Cache`).
 
 If the file path holds a valid CSV file with exchange rates, the rates will be
-used for conversion (unless newer rates are available; if so, new rates will be
-fetched—see `auto-update`_). If the file does not exist or is "somehow bogus",
-new rates will be downloaded from the European Central Bank and stored in the
-file (or an :ruby:`InvalidCacheError` will be raise if `auto-update`_ is off).
+used for conversion (unless newer rates are available—see `auto-update`_). If
+the file does not exist or is "somehow bogus", new rates will be downloaded from
+the European Central Bank and stored in the file (or an
+:ruby:`InvalidCacheError` will be raise if `auto-update`_ is off).
 
 
 .. _`auto-update`:
@@ -111,11 +111,14 @@ before :ruby:`.new` and then call :ruby:`#reload` after you updated the cache.
 Can I code my own cache?
 ------------------------
 
-Yes, just :ruby:`include Money::Bank::ECB::Cache` and implement
-:ruby:`.new_from?` (if you accept what :ruby:`.new` was given) and
-:ruby:`.priority` (let it be ``=> 2`` since ``0`` and ``1`` are already used for
-:ruby:`SimpleCache` and :ruby:`CacheFile` respectively). No monkey patching
-needed!
+Yes, have a look in `lib/money/bank/ecb/`; just :ruby:`include
+Money::Bank::ECB::Cache` and implement :ruby:`#set` and :ruby:`#get` and use
+:ruby:`MyCache`:
+
+.. code-block:: ruby
+
+    cache = Money::Bank::ECB::MyCache.new(params)
+    Money.default_bank = Money::Bank::ECB.new(cache)
 
 
 Contribute
