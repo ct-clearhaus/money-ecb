@@ -30,10 +30,14 @@ money-ecb
 Introduction
 ------------
 
-This gem is a RubyMoney_ bank that can exchange ``Money`` using rates from the
-ECB (European Central Bank). It will automatically keep the rates updated.
+`This gem <https://rubygems.org/gems/money-ecb>`_ is a RubyMoney_ bank that can
+exchange ``Money`` using rates from the ECB (European Central Bank). It will
+automatically keep the rates updated.
 
 .. _RubyMoney: http://rubymoney.github.io/money
+
+It is **not** production ready yet. Not because it isn't stable, but because I
+might change the API. Wait a month or two. Or three :smile:
 
 Installation
 ------------
@@ -118,7 +122,7 @@ before :ruby:`.new` and then call :ruby:`#reload` after you updated the cache.
 Can I code my own cache?
 ------------------------
 
-Yes, have a look in `lib/money/bank/ecb/`; just :ruby:`include
+Yes, have a look in ``lib/money/bank/ecb/``; just :ruby:`include
 Money::Bank::ECB::Cache` and implement :ruby:`#set` and :ruby:`#get` and use
 :ruby:`MyCache`:
 
