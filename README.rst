@@ -4,8 +4,8 @@
 .. role:: sh(code)
     :language: sh
 
-money-ecb
-==========
+money-ecb, DEPRECATED
+=====================
 
 .. image:: https://travis-ci.org/ct-clearhaus/money-ecb.png?branch=master
     :alt: Build Status
